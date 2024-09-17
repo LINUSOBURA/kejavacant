@@ -21,6 +21,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <script src="https://accounts.google.com/gsi/client" async></script>
+      </head>
       <body
         className={`${poppins.className} antialiased min-h-screen max-w-full overflow-x-hidden flex flex-col`}
       >

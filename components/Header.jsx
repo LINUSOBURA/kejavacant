@@ -1,20 +1,10 @@
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
-import { FaRegUserCircle } from "react-icons/fa";
-import { createClient } from "@/utils/supabase/server";
+import LoginButton from "./LoginLogoutButton";
+import UserGreetText from "./UserGreetText";
 
 export default function Header() {
-  const supabase = createClient();
-
-  const currentUser = async () => {
-    const { data, error } = await supabase.auth.getUser();
-    if (error || !data?.user) {
-      return "Guest";
-    }
-    return data.user.user_metadata.display_name;
-  };
-
   return (
     <main className="flex flex-row justify-between items-center px-4 sm:px-8 md:px-12">
       <div className="section1 flex justify-around items-center">
@@ -34,10 +24,10 @@ export default function Header() {
         </div>
       </div>
       <div className="section2 flex gap-5 items-center">
-        <p>
-          <FaRegUserCircle />
-          {currentUser()}
+        <p className="flex gap-2 items-center">
+          <UserGreetText />
         </p>
+        <LoginButton />
         <Link href={"/post-ad"}>
           <button className="rounded bg-red-300 px-2 py-1 sm:px-4 sm:py-2">
             Post Ad

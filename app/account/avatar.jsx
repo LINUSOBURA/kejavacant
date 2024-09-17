@@ -62,7 +62,7 @@ export default function Avatar({ uid, url, size, onUpload }) {
         <Image
           width={size}
           height={size}
-          src={avatarUrl}
+          src={user.user_metadata.Avatar_url}
           alt="Avatar"
           className="avatar image"
           style={{ height: size, width: size }}
