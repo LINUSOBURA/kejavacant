@@ -10,6 +10,7 @@ export default function Houses() {
       name: "House 1",
       image: "https://picsum.photos/id/1/200/300",
       rent: 10000,
+      premium: false,
       location: "Umoja, Nairobi",
     },
     {
@@ -17,6 +18,7 @@ export default function Houses() {
       name: "House 2",
       image: "https://picsum.photos/id/1/200/300",
       rent: 10000,
+      premium: true,
       location: "Kayole, Nairobi",
     },
   ];
@@ -24,18 +26,25 @@ export default function Houses() {
     <main className="mt-5 px-4 sm:px-8 md:px-12 py-4">
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {houses.map((house) => (
-          <div key={house.id} className="flex flex-col bg-slate-100 rounded">
+          <div className="card bg-fuchsia-100 shadow-xl w-auto" key={house.id}>
             <Link href={`/houses/${house.id}`}>
-              <Image
-                src={house.image}
-                alt={house.name}
-                width={200}
-                height={300}
-                className="object-cover w-[500px] h-[300px] rounded"
-              />
-              <div className="p-4 flex flex-col gap-2 text-sm sm:text-lg md:text-xl">
-                <h1 className="text-lg font-bold">{house.name}</h1>
-                <p>Ksh {house.rent}</p>
+              <figure className="h-[200px] w-full overflow-hidden">
+                <Image
+                  src={house.image}
+                  alt="House Image"
+                  width={400}
+                  height={200}
+                  className="object-cover w-full h-full"
+                />
+              </figure>
+              <div className="card-body">
+                <h2 className="card-title">
+                  {house.name}
+                  {house.premium && (
+                    <div className="badge badge-secondary">Top Offer</div>
+                  )}
+                </h2>
+                <p>KES {house.rent}</p>
                 <p className="flex items-center gap-2">
                   <CiLocationOn /> {house.location}
                 </p>
