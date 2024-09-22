@@ -6,7 +6,7 @@ import { createClient } from "@/utils/supabase/client";
 import { signout } from "../utils/auth-actions";
 
 const LoginButton = () => {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<unknown>(null);
   const router = useRouter();
   const supabase = createClient();
   useEffect(() => {

@@ -13,14 +13,14 @@ export default function Header() {
   };
 
   return (
-    <main className="flex flex-row justify-between items-center px-4 sm:px-8 md:px-12">
+    <main className="flex flex-row justify-between items-center px-4 sm:px-8 md:px-12 sticky top-0 z-50 bg-teal-100">
       <div className="section1 flex justify-around items-center">
         <Link href={"/"}>
           <Image
             alt="Logo"
             src="/logo.svg"
-            width={100}
-            height={100}
+            width={70}
+            height={70}
             className="mr-10"
           />
         </Link>
@@ -77,7 +77,7 @@ export default function Header() {
               <UserGreetText />
             </p>
             <LoginButton />
-            <Link href={"/post-ad"}>
+            <Link href={isLoggedIn ? "/post-ad" : "/login"}>
               <button className="rounded bg-red-300 px-4 py-2">Post Ad</button>
             </Link>
           </div>

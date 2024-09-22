@@ -3,14 +3,12 @@ import { useCallback, useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
 import Loading from "@/components/loading";
-import Avatar from "./avatar";
+import Avatar from "./components/avatar";
 
 export default function AccountForm({ user }) {
   const supabase = createClient();
   const [loading, setLoading] = useState(true);
-  const [fullname, setFullname] = useState(null);
-  const [username, setUsername] = useState(null);
-  const [phone, setPhone] = useState(null);
+  const [full_name, setFullname] = useState(null);
   const [avatar_url, setAvatarUrl] = useState(null);
   const router = useRouter();
 
@@ -20,9 +18,10 @@ export default function AccountForm({ user }) {
 
       const { data, error, status } = await supabase
         .from("profiles")
-        .select(`display_name, username, phone, avatar_url`)
+        .select(`full_name, email, avatar_url`)
         .eq("id", user?.id)
         .single();
+      console.log(data);
 
       if (error && status !== 406) {
         throw error;
@@ -30,8 +29,6 @@ export default function AccountForm({ user }) {
 
       if (data) {
         setFullname(data.full_name);
-        setUsername(data.username);
-        setPhone(data.phone);
         setAvatarUrl(data.avatar_url);
       }
     } catch (error) {
@@ -45,15 +42,13 @@ export default function AccountForm({ user }) {
     getProfile();
   }, [user, getProfile]);
 
-  async function updateProfile({ username, phone, avatar_url }) {
+  async function updateProfile({ full_name, avatar_url }) {
     try {
       setLoading(true);
 
       const { error } = await supabase.from("profiles").upsert({
         id: user?.id,
-        full_name: fullname,
-        username,
-        phone,
+        full_name: full_name,
         avatar_url,
         updated_at: new Date().toISOString(),
       });
@@ -74,15 +69,15 @@ export default function AccountForm({ user }) {
   }
 
   return (
-    <div className="mx-auto mt-8 min-h-screen p-10">
-      <div className="form-widget flex flex-col gap-2">
+    <div className="mt-8 p-10">
+      <form className="form-widget flex flex-col gap-2">
         <Avatar
           uid={user?.id}
           url={avatar_url}
           size={150}
           onUpload={(url) => {
             setAvatarUrl(url);
-            updateProfile({ fullname, username, website, avatar_url: url });
+            updateProfile({ full_name, username, website, avatar_url: url });
           }}
         />
         <div>
@@ -100,28 +95,8 @@ export default function AccountForm({ user }) {
           <input
             id="fullName"
             type="text"
-            value={fullname || ""}
-            onChange={(e) => setFullname(e.target.value)}
-            className="bg-yellow-50 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-customGreen"
-          />
-        </div>
-        <div>
-          <label htmlFor="username">Username: </label>
-          <input
-            id="username"
-            type="text"
-            value={username || ""}
-            onChange={(e) => setUsername(e.target.value)}
-            className="bg-yellow-50 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-customGreen"
-          />
-        </div>
-        <div>
-          <label htmlFor="phone">Phone Number: </label>
-          <input
-            id="phone"
-            type="text"
-            value={phone || ""}
-            onChange={(e) => setWebsite(e.target.value)}
+            value={full_name || ""}
+            disabled
             className="bg-yellow-50 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-customGreen"
           />
         </div>
@@ -129,26 +104,14 @@ export default function AccountForm({ user }) {
         <div>
           <button
             className="button primary block bg-customGreen rounded-xl p-2 mt-2"
-            onClick={() =>
-              updateProfile({ fullname, username, phone, avatar_url })
-            }
+            onClick={() => updateProfile({ full_name, avatar_url })}
             disabled={loading}
+            type="button"
           >
             {loading ? "Loading ..." : "Update"}
           </button>
         </div>
-
-        <div>
-          <form action="/auth/signout" method="post">
-            <button
-              className="button block primary bg-CustomPink2 rounded-xl p-2 mt-2"
-              type="submit"
-            >
-              Sign out
-            </button>
-          </form>
-        </div>
-      </div>
+      </form>
     </div>
   );
 }
