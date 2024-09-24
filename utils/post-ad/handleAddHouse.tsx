@@ -11,7 +11,9 @@ const houseSchema = z.object({
   rooms: z.string().min(1, "Number of rooms is required"),
   rent: z.string().min(1, "Rent is required"),
   description: z.string().min(1, "Description is required"),
-  location: z.string().min(1, "Location is required"),
+  // location: z.string().min(1, "Location is required"),
+  lat: z.number(),
+  lng: z.number(),
   contact: z.string().min(1, "Contact number is required"),
   balcony: z.string().nullable(),
   parking: z.string().nullable(),
@@ -42,7 +44,8 @@ export async function handleAdPost(formData: FormData) {
     rooms: formData.get("rooms"),
     rent: formData.get("rent"),
     description: formData.get("description"),
-    location: formData.get("location"),
+    lat: parseFloat(formData.get("lat")?.toString() ?? ""), // Convert lat to a number
+    lng: parseFloat(formData.get("lng")?.toString() ?? ""),
     contact: formData.get("contact"),
     parking: formData.get("parking"),
     deposit: formData.get("deposit"),
@@ -58,9 +61,12 @@ export async function handleAdPost(formData: FormData) {
     throw new Error(JSON.stringify(validation.error.flatten()));
   }
 
+  const locationPoint = `SRID=4326;POINT(${validation.data.lng} ${validation.data.lat})`;
+
   const houseData = {
     ...validation.data,
     user_id: user.id,
+    location: locationPoint,
   };
 
   // Handle image uploads
@@ -74,7 +80,6 @@ export async function handleAdPost(formData: FormData) {
         cacheControl: "3600",
         upsert: false,
       });
-    console.log(data);
 
     if (error) {
       console.log(error);

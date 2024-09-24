@@ -59,24 +59,19 @@ export default async function House({
       <div className="card lg:card-side shadow-xl">
         <figure className="flex flex-col items-center justify-center p-6 w-full md:w-1/3">
           <Carousel className="w-full max-w-xs flex justify-center items-center bg-inherit">
-            {Houses.image ? (
-              <CarouselContent>
-                {house.images.map((image) => (
-                  <CarouselItem key={image}>
-                    <Image
-                      src={image}
-                      alt="House Image"
-                      width={500}
-                      height={300}
-                      className="object-cover w-full h-full"
-                    />
-                  </CarouselItem>
-                ))}
-              </CarouselContent>
-            ) : (
-              <CarouselContent></CarouselContent>
-            )}
-
+            <CarouselContent>
+              {house.images.map((image) => (
+                <CarouselItem key={image}>
+                  <Image
+                    src={image}
+                    alt="House Image"
+                    width={500}
+                    height={300}
+                    className="object-cover w-full h-full"
+                  />
+                </CarouselItem>
+              ))}
+            </CarouselContent>
             <CarouselPrevious className="absolute left-2 top-1/2 transform -translate-y-1/2 z-10 bg-gray-100 p-2 rounded-full" />
             <CarouselNext className="absolute right-2 top-1/2 transform -translate-y-1/2 z-10 bg-gray-100 p-2 rounded-full" />
           </Carousel>

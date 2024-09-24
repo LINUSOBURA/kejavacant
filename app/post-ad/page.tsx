@@ -1,9 +1,11 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
+import debounce from "lodash.debounce";
 import { useRouter } from "next/navigation";
 import { handleAdPost } from "../../utils/post-ad/handleAddHouse";
 import { getUserAndProfile } from "@/utils/checkLogin";
 import { z } from "zod";
+import * as tt from "@tomtom-international/web-sdk-services";
 
 // Zod schema for client-side validation
 const houseSchema = z.object({
@@ -14,6 +16,8 @@ const houseSchema = z.object({
   rent: z.string().min(1, "Rent is required"),
   description: z.string().min(1, "Description is required"),
   location: z.string().min(1, "Location is required"),
+  lat: z.number(),
+  lng: z.number(),
   contact: z.string().min(1, "Contact number is required"),
   images: z.array(z.instanceof(File)).max(3, "You can upload up to 3 images"),
 });
@@ -21,7 +25,40 @@ const houseSchema = z.object({
 export default function PostAd() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formErrors, setFormErrors] = useState<Record<string, string>>({}); // Store individual errors here
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+  const [location, setLocation] = useState("");
+  const [coordinates, setCoordinates] = useState({ lat: 0, lng: 0 });
+  const [suggestions, setSuggestions] = useState([]);
+
+  const handleAutocomplete = useCallback(
+    debounce((query: string) => {
+      if (query.length < 4) {
+        setSuggestions([]); // Clear suggestions if less than 4 characters
+        return;
+      }
+
+      tt.services
+        .fuzzySearch({
+          key: process.env.NEXT_PUBLIC_TOMTOM_API_KEY,
+          query,
+          countrySet: ["KEN"], // Limit search results to Kenya
+        })
+        .then((results) => {
+          setSuggestions(results.results);
+        })
+        .catch((err) => console.error(err));
+    }, 100),
+    [] // 100ms debounce time
+  );
+  // Function to handle suggestion selection
+  const handleSuggestionClick = (suggestion) => {
+    setCoordinates({
+      lat: suggestion.position.lat,
+      lng: suggestion.position.lng,
+    });
+    setLocation(suggestion.address.freeformAddress);
+    setSuggestions([]);
+  };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -29,6 +66,8 @@ export default function PostAd() {
     setFormErrors({}); // Reset errors
 
     const formData = new FormData(event.currentTarget);
+    formData.append("lat", coordinates.lat.toString());
+    formData.append("lng", coordinates.lng.toString());
 
     try {
       const formEntries = {
@@ -38,7 +77,9 @@ export default function PostAd() {
         rooms: formData.get("rooms"),
         rent: formData.get("rent"),
         description: formData.get("description"),
-        location: formData.get("location"),
+        location: location,
+        lat: coordinates.lat,
+        lng: coordinates.lng,
         contact: formData.get("contact"),
         parking: formData.get("parking"),
         deposit: formData.get("deposit"),
@@ -87,65 +128,60 @@ export default function PostAd() {
             <input
               type="text"
               name="name"
-              className="block w-full text-sm rounded-lg border border-gray-300 bg-inherit px-3 dark:placeholder-gray-400"
+              className="p-2 block w-full text-sm rounded-lg border border-gray-300 bg-inherit px-3 dark:placeholder-gray-400"
             />
             {formErrors.name && (
               <p className="text-red-500">{formErrors.name}</p>
             )}
           </div>
-
           {/* House Number */}
           <div className="mt-3 flex flex-col gap-2">
             <label> House Number</label>
             <input
               type="number"
               name="house_number"
-              className="block w-full text-sm rounded-lg border border-gray-300 bg-inherit px-3 dark:placeholder-gray-400"
+              className="p-2 block w-full text-sm rounded-lg border border-gray-300 bg-inherit px-3 dark:placeholder-gray-400"
             />
             {formErrors.house_number && (
               <p className="text-red-500">{formErrors.house_number}</p>
             )}
           </div>
-
           {/* Floor */}
           <div className="mt-3 flex flex-col gap-2">
             <label>Floor (0 for ground floor)</label>
             <input
               type="number"
               name="floor"
-              className="block w-full text-sm rounded-lg border border-gray-300 bg-inherit px-3 dark:placeholder-gray-400"
+              className="p-2 block w-full text-sm rounded-lg border border-gray-300 bg-inherit px-3 dark:placeholder-gray-400"
             />
             {formErrors.floor && (
               <p className="text-red-500">{formErrors.floor}</p>
             )}
           </div>
-
           {/* Rooms */}
           <div className="mt-3 flex flex-col gap-2">
             <label> Rooms</label>
             <input
               type="number"
               name="rooms"
-              className="block w-full text-sm rounded-lg border border-gray-300 bg-inherit px-3 dark:placeholder-gray-400"
+              className=" p-2 block w-full text-sm rounded-lg border border-gray-300 bg-inherit px-3 dark:placeholder-gray-400"
             />
             {formErrors.rooms && (
               <p className="text-red-500">{formErrors.rooms}</p>
             )}
           </div>
-
           {/* Rent */}
           <div className="mt-3 flex flex-col gap-2">
             <label>Rent (Monthly in KES)</label>
             <input
               type="number"
               name="rent"
-              className="block w-full text-sm rounded-lg border border-gray-300 bg-inherit px-3 dark:placeholder-gray-400"
+              className="p-2 w-full text-sm rounded-lg border border-gray-300 bg-inherit px-3 dark:placeholder-gray-400"
             />
             {formErrors.rent && (
               <p className="text-red-500">{formErrors.rent}</p>
             )}
           </div>
-
           {/* Description */}
           <div className="mt-3 flex flex-col gap-2">
             <label>Description (Add as much information as possible)</label>
@@ -157,17 +193,38 @@ export default function PostAd() {
               <p className="text-red-500">{formErrors.description}</p>
             )}
           </div>
-
           {/* Location */}
-          <div className="mt-3 flex flex-col gap-2">
-            <label>Location (County, Constituency, Area)</label>
+          <div className="mt-3 flex flex-col gap-2 relative">
+            <label>Location</label>
             <input
               type="text"
               name="location"
-              className="block w-full text-sm rounded-lg border border-gray-300 bg-inherit px-3 dark:placeholder-gray-400"
+              value={location}
+              onChange={(e) => {
+                const value = e.target.value;
+                setLocation(value); // Update the input field value
+                handleAutocomplete(value); // Trigger autocomplete search
+              }}
+              className="block w-full text-sm rounded-lg border border-gray-300 bg-inherit px-3 dark:placeholder-gray-400 p-2"
+              required
             />
             {formErrors.location && (
               <p className="text-red-500">{formErrors.location}</p>
+            )}
+
+            {/* Render autocomplete suggestions below the input */}
+            {suggestions.length > 0 && (
+              <ul className="absolute top-full left-0 w-full border border-gray-300 rounded-lg shadow-md bg-white z-10 mt-1">
+                {suggestions.map((suggestion, index) => (
+                  <li
+                    key={index}
+                    onClick={() => handleSuggestionClick(suggestion)}
+                    className="cursor-pointer hover:bg-gray-200 p-2"
+                  >
+                    {suggestion.address.freeformAddress}
+                  </li>
+                ))}
+              </ul>
             )}
           </div>
 
@@ -177,7 +234,7 @@ export default function PostAd() {
             <input
               type="text"
               name="contact"
-              className="block w-full text-sm rounded-lg border border-gray-300 bg-inherit px-3 dark:placeholder-gray-400"
+              className="p-2 block w-full text-sm rounded-lg border border-gray-300 bg-inherit px-3 dark:placeholder-gray-400"
             />
             {formErrors.contact && (
               <p className="text-red-500">{formErrors.contact}</p>
@@ -218,7 +275,6 @@ export default function PostAd() {
               <input type="checkbox" name="wifi" id="" />
             </span>
           </div>
-
           {/* Images */}
           <div className="mt-5 flex gap-2 items-center">
             <label> Images (Max 3): </label>
@@ -233,7 +289,6 @@ export default function PostAd() {
               <p className="text-red-500">{formErrors.images}</p>
             )}
           </div>
-
           <div className="mt-5 flex gap-2 items-center">
             <button
               type="submit"

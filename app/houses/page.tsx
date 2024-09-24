@@ -61,7 +61,7 @@ export default async function Houses() {
                 </p>
                 <p className="flex items-center gap-2">
                   <CiLocationOn />
-                  {house.location}
+                  {/* {house.location} */}
                 </p>
               </div>
             </Link>
