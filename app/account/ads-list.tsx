@@ -2,8 +2,8 @@
 import React from "react";
 import { createClient } from "@/utils/supabase/server";
 import { getUserAndProfile } from "@/utils/checkLogin";
-import { CiEdit } from "react-icons/ci";
 import DeleteHouseForm from "./components/deleteHouseForm";
+import HouseTable from "./components/updateHouseForm";
 
 export default async function AdsList() {
   const supabase = createClient();
@@ -64,9 +64,7 @@ export default async function AdsList() {
                 {formatDate(house.created_at)}
               </td>
               <td className="border border-gray-300 p-2 text-center">
-                <button>
-                  <CiEdit />
-                </button>
+                <HouseTable house={house} />
               </td>
               <td className="border border-gray-300 p-2 text-center">
                 {/* Form to trigger server-side delete */}
