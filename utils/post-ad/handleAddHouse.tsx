@@ -149,7 +149,7 @@ export async function updateHouse(house_id, formData: FormData) {
   const { data, error } = await supabase
     .from("houses")
     .update(updateData)
-    .eq("id", house_id);
+    .eq("house_id", house_id);
 
   if (error) {
     console.error(error);

@@ -24,13 +24,25 @@ export default async function Houses() {
           >
             <Link href={`/houses/${house.house_id}`}>
               <figure className="h-[200px] w-full overflow-hidden">
-                <Image
-                  src={house.images[0]}
-                  alt="House Image"
-                  width={400}
-                  height={200}
-                  className="object-cover w-full h-full"
-                />
+                {house.images && house.images[0] ? (
+                  <Image
+                    src={house.images[0]}
+                    alt="House Image"
+                    width={400}
+                    height={200}
+                    className="object-cover w-full h-full"
+                  />
+                ) : (
+                  <Image
+                    src={
+                      "https://upload.wikimedia.org/wikipedia/commons/d/d1/Image_not_available.png"
+                    }
+                    alt="House Image"
+                    width={400}
+                    height={200}
+                    className="object-cover w-full h-full"
+                  />
+                )}
               </figure>
               <div className="card-body">
                 <h2 className="card-title">
