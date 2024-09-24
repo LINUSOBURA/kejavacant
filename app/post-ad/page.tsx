@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { handleAdPost } from "../../utils/post-ad/handleAddHouse";
-import LoggedIn from "@/utils/checkLogin";
+import { getUserAndProfile } from "@/utils/checkLogin";
 import { z } from "zod";
 
 // Zod schema for client-side validation
@@ -72,7 +72,7 @@ export default function PostAd() {
     }
   };
 
-  LoggedIn();
+  getUserAndProfile();
 
   return (
     <div className="flex justify-center">

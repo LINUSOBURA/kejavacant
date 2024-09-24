@@ -1,5 +1,4 @@
 "use server";
-
 import { redirect } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
 import { z } from "zod";
@@ -158,17 +157,4 @@ export async function updateHouse(house_id, formData: FormData) {
   }
 
   return data;
-}
-
-export async function deleteHouse(house_id) {
-  const supabase = createClient();
-
-  const { error } = await supabase.from("houses").delete().eq("id", house_id);
-
-  if (error) {
-    console.error(error);
-    throw new Error("Failed to delete the house.");
-  }
-
-  return { success: true };
 }

@@ -4,9 +4,13 @@ import Link from "next/link";
 import React, { useState } from "react";
 import LoginButton from "./LoginLogoutButton";
 import UserGreetText from "./UserGreetText";
+import { createClient } from "@/utils/supabase/client";
 
 export default function Header() {
+  const supabase = createClient();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  const { user } = supabase.auth.getUser();
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -77,7 +81,7 @@ export default function Header() {
               <UserGreetText />
             </p>
             <LoginButton />
-            <Link href={isLoggedIn ? "/post-ad" : "/login"}>
+            <Link href={user ? "/post-ad" : "/login"}>
               <button className="rounded bg-red-300 px-4 py-2">Post Ad</button>
             </Link>
           </div>

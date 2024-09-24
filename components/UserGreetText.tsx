@@ -2,6 +2,7 @@
 import { createClient } from "@/utils/supabase/client";
 import { User } from "@supabase/supabase-js";
 import Image from "next/image";
+import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import { FaRegUserCircle } from "react-icons/fa";
 
@@ -21,16 +22,18 @@ const UserGreetText = () => {
     return (
       <span className="flex gap-2 items-center">
         <span className="text-3xl font-bold">
-          <Image
-            alt="avatar"
-            src={
-              user.user_metadata.avatar_url ??
-              "https://www.iconsdb.com/icons/preview/black/add-user-3-xxl.png"
-            }
-            width="30"
-            height="30"
-            className="inline-block rounded-full"
-          ></Image>
+          <Link href={"/account"}>
+            <Image
+              alt="avatar"
+              src={
+                user.user_metadata.avatar_url ??
+                "https://www.iconsdb.com/icons/preview/black/add-user-3-xxl.png"
+              }
+              width="30"
+              height="30"
+              className="inline-block rounded-full"
+            ></Image>
+          </Link>
         </span>
         hello&nbsp;
         <code className="font-mono font-bold">
