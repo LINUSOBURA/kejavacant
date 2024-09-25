@@ -129,7 +129,8 @@ export async function updateHouse(house_id, formData: FormData) {
     rooms: formData.get("rooms"),
     rent: formData.get("rent"),
     description: formData.get("description"),
-    location: formData.get("location"),
+    lat: parseFloat(formData.get("lat")?.toString() ?? ""), // Convert lat to a number
+    lng: parseFloat(formData.get("lng")?.toString() ?? ""),
     contact: formData.get("contact"),
     parking: formData.get("parking"),
     deposit: formData.get("deposit"),
@@ -144,11 +145,40 @@ export async function updateHouse(house_id, formData: FormData) {
   if (!validation.success) {
     throw new Error(JSON.stringify(validation.error.flatten()));
   }
+  const locationPoint = `SRID=4326;POINT(${validation.data.lng} ${validation.data.lat})`;
 
   const updateData = {
     ...validation.data,
     user_id: user.id,
+    location: locationPoint,
   };
+
+  // Handle image uploads
+  const imageFiles = formData.getAll("images") as File[];
+  const imageUrls = [];
+
+  for (const image of imageFiles) {
+    const { data, error } = await supabase.storage
+      .from("house-images")
+      .upload(`public/${user.id}/${Date.now()}-${image.name}`, image, {
+        cacheControl: "3600",
+        upsert: false,
+      });
+
+    if (error) {
+      console.log(error);
+      throw new Error(`Failed to upload image: ${image.name}`);
+    }
+
+    const publicUrlResponse = supabase.storage
+      .from("house-images")
+      .getPublicUrl(data.path);
+
+    const publicUrl = publicUrlResponse.data.publicUrl;
+    imageUrls.push(publicUrl);
+  }
+
+  updateData.images = imageUrls;
 
   // Update the house record
   const { data, error } = await supabase
