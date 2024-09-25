@@ -49,7 +49,6 @@ export default async function AdsList() {
         <thead>
           <tr>
             <th className="border border-gray-300 p-2">Name</th>
-            <th className="border border-gray-300 p-2">Location</th>
             <th className="border border-gray-300 p-2">Posted Date</th>
             <th className="border border-gray-300 p-2">Edit</th>
             <th className="border border-gray-300 p-2">Delete</th>
@@ -59,7 +58,6 @@ export default async function AdsList() {
           {houses.map((house) => (
             <tr key={house.house_id}>
               <td className="border border-gray-300 p-2">{house.name}</td>
-              <td className="border border-gray-300 p-2">{house.location}</td>
               <td className="border border-gray-300 p-2">
                 {formatDate(house.created_at)}
               </td>

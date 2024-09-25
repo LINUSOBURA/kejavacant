@@ -1,9 +1,11 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { updateHouse } from "@/utils/post-ad/handleAddHouse";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 import { z } from "zod";
+import * as tt from "@tomtom-international/web-sdk-services";
+import debounce from "lodash.debounce";
 
 const houseSchema = z.object({
   name: z.string().min(1, "House name is required"),
@@ -13,6 +15,8 @@ const houseSchema = z.object({
   rent: z.string().min(1, "Rent is required"),
   description: z.string().min(1, "Description is required"),
   location: z.string().min(1, "Location is required"),
+  lat: z.number(),
+  lng: z.number(),
   contact: z.string().min(1, "Contact number is required"),
   images: z.array(z.instanceof(File)).max(3, "You can upload up to 3 images"),
 });
@@ -21,6 +25,40 @@ export default function EditHouseForm({ house_id, onClose }) {
   const [house, setHouse] = useState(null);
   const router = useRouter();
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+  const [location, setLocation] = useState("");
+  const [coordinates, setCoordinates] = useState({ lat: 0, lng: 0 });
+  const [suggestions, setSuggestions] = useState([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleAutocomplete = useCallback(
+    debounce((query: string) => {
+      if (query.length < 4) {
+        setSuggestions([]); // Clear suggestions if less than 4 characters
+        return;
+      }
+
+      tt.services
+        .fuzzySearch({
+          key: process.env.NEXT_PUBLIC_TOMTOM_API_KEY,
+          query,
+          countrySet: ["KEN"], // Limit search results to Kenya
+        })
+        .then((results) => {
+          setSuggestions(results.results);
+        })
+        .catch((err) => console.error(err));
+    }, 100),
+    [] // 100ms debounce time
+  );
+  // Function to handle suggestion selection
+  const handleSuggestionClick = (suggestion) => {
+    setCoordinates({
+      lat: suggestion.position.lat,
+      lng: suggestion.position.lng,
+    });
+    setLocation(suggestion.address.freeformAddress);
+    setSuggestions([]);
+  };
 
   useEffect(() => {
     const fetchHouse = async () => {
@@ -43,7 +81,10 @@ export default function EditHouseForm({ house_id, onClose }) {
 
   const handleUpdate = async (event) => {
     event.preventDefault();
+    setIsSubmitting(true);
     const formData = new FormData(event.target);
+    formData.append("lat", coordinates.lat.toString());
+    formData.append("lng", coordinates.lng.toString());
 
     try {
       const formEntries = {
@@ -54,6 +95,8 @@ export default function EditHouseForm({ house_id, onClose }) {
         rent: formData.get("rent"),
         description: formData.get("description"),
         location: formData.get("location"),
+        lat: coordinates.lat,
+        lng: coordinates.lng,
         contact: formData.get("contact"),
         parking: formData.get("parking"),
         deposit: formData.get("deposit"),
@@ -81,6 +124,8 @@ export default function EditHouseForm({ house_id, onClose }) {
       router.push("/success"); // Optional redirect after update
     } catch (error) {
       console.error("Failed to update house:", error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -163,16 +208,37 @@ export default function EditHouseForm({ house_id, onClose }) {
       </div>
 
       {/* Location */}
-      <div className="mt-3 flex flex-col gap-2">
-        <label>Location (County, Constituency, Area)</label>
+      <div className="mt-3 flex flex-col gap-2 relative">
+        <label>Location</label>
         <input
           type="text"
           name="location"
-          defaultValue={house.location}
-          className="block w-full text-sm rounded-lg border border-gray-300 bg-inherit px-3 dark:placeholder-gray-400"
+          value={location}
+          onChange={(e) => {
+            const value = e.target.value;
+            setLocation(value); // Update the input field value
+            handleAutocomplete(value); // Trigger autocomplete search
+          }}
+          className="block w-full text-sm rounded-lg border border-gray-300 bg-inherit px-3 dark:placeholder-gray-400 p-2"
+          required
         />
         {formErrors.location && (
           <p className="text-red-500">{formErrors.location}</p>
+        )}
+
+        {/* Render autocomplete suggestions below the input */}
+        {suggestions.length > 0 && (
+          <ul className="absolute top-full left-0 w-full border border-gray-300 rounded-lg shadow-md bg-white z-10 mt-1">
+            {suggestions.map((suggestion, index) => (
+              <li
+                key={index}
+                onClick={() => handleSuggestionClick(suggestion)}
+                className="cursor-pointer hover:bg-gray-200 p-2"
+              >
+                {suggestion.address.freeformAddress}
+              </li>
+            ))}
+          </ul>
         )}
       </div>
 
@@ -261,7 +327,15 @@ export default function EditHouseForm({ house_id, onClose }) {
         )}
       </div>
 
-      <button type="submit">Update House</button>
+      <div className="mt-5 flex gap-2 items-center">
+        <button
+          type="submit"
+          className="btn btn-primary mt-5"
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? "Updating..." : "Update"}
+        </button>
+      </div>
     </form>
   );
 }
