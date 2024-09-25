@@ -1,15 +1,18 @@
-import { createClient } from "@/utils/supabase/server";
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
 import { CiLocationOn } from "react-icons/ci";
+import { getHousesWithTomTomAddresses } from "@/components/HouseLocation";
 
 export default async function Houses() {
-  const supabase = createClient();
-  const { data: houses, error } = await supabase.from("houses").select();
-  if (error) {
-    console.log(error);
-  }
+  // const supabase = createClient();
+  // const { data: houses, error } = await supabase.from("houses").select();
+  // if (error) {
+  //   console.log(error);
+  // }
+
+  const houses = await getHousesWithTomTomAddresses();
+  console.log(houses);
   if (!houses) {
     return <div>Loading...</div>;
   }
@@ -61,7 +64,7 @@ export default async function Houses() {
                 </p>
                 <p className="flex items-center gap-2">
                   <CiLocationOn />
-                  {house.location}
+                  {house.address}
                 </p>
               </div>
             </Link>

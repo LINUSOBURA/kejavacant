@@ -2,7 +2,7 @@ import Image from "next/image";
 import React from "react";
 import { createClient } from "@/utils/supabase/server";
 import { generateStaticParams } from "@/utils/generateStatic";
-import { CiLocationOn } from "react-icons/ci";
+// import { CiLocationOn } from "react-icons/ci";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import {
@@ -12,7 +12,9 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
-import Houses from "../page";
+
+import MapComponent from "./components/Map";
+// import Houses from "../page";
 
 type props = {
   params: {
@@ -46,6 +48,8 @@ export default async function House({
     console.log(error);
   }
 
+  console.log(house);
+
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -54,29 +58,25 @@ export default async function House({
   if (showContact && !user) {
     redirect("/login");
   }
+
   return (
     <div className="min-h-screen ml-0 mr-0 sm:ml-5 sm:mr-5 mt-4">
       <div className="card lg:card-side shadow-xl">
         <figure className="flex flex-col items-center justify-center p-6 w-full md:w-1/3">
           <Carousel className="w-full max-w-xs flex justify-center items-center bg-inherit">
-            {Houses.image ? (
-              <CarouselContent>
-                {house.images.map((image) => (
-                  <CarouselItem key={image}>
-                    <Image
-                      src={image}
-                      alt="House Image"
-                      width={500}
-                      height={300}
-                      className="object-cover w-full h-full"
-                    />
-                  </CarouselItem>
-                ))}
-              </CarouselContent>
-            ) : (
-              <CarouselContent></CarouselContent>
-            )}
-
+            <CarouselContent>
+              {house.images.map((image) => (
+                <CarouselItem key={image}>
+                  <Image
+                    src={image}
+                    alt="House Image"
+                    width={500}
+                    height={300}
+                    className="object-cover w-full h-full"
+                  />
+                </CarouselItem>
+              ))}
+            </CarouselContent>
             <CarouselPrevious className="absolute left-2 top-1/2 transform -translate-y-1/2 z-10 bg-gray-100 p-2 rounded-full" />
             <CarouselNext className="absolute right-2 top-1/2 transform -translate-y-1/2 z-10 bg-gray-100 p-2 rounded-full" />
           </Carousel>
@@ -95,7 +95,7 @@ export default async function House({
             }).format(house.rent)}
           </p>
 
-          <p>{house.location}</p>
+          {/* <p>{house.location}</p> */}
           <h3 className="font-bold">Features</h3>
           <p>Deposit: {house.deposit ? <span>Yes</span> : <span>No</span>}</p>
           <p>
@@ -112,9 +112,7 @@ export default async function House({
             {house.deposit ? <span>Yes</span> : <span>No</span>}
           </p>
           <div className="card-actions justify-between items-center">
-            <p>
-              <CiLocationOn /> {house.location}
-            </p>
+            <p>{/* <CiLocationOn /> {house.location} */}</p>
             <div className="flex gap-5 items-center">
               <Link
                 href={!showContact ? `?showContact=true` : `?showContact=false`}
@@ -126,10 +124,12 @@ export default async function House({
               {showContact && <p>{house.contact}</p>}
             </div>
           </div>
-
-          <p>{house.user_id}</p>
         </div>
       </div>
+
+      {house.lat && house.lng && (
+        <MapComponent lat={house.lat} lng={house.lng} />
+      )}
     </div>
   );
 }
