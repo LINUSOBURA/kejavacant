@@ -247,12 +247,7 @@ export default function PostAd() {
           <div className="mt-3 flex gap-5 flex-wrap">
             <span className="flex gap-2">
               <label htmlFor="">Balcony</label>
-              <input
-                type="checkbox"
-                name="balcony"
-                id=""
-                className="bg-white"
-              />
+              <input type="checkbox" name="balcony" id="" />
             </span>
             <span className="flex gap-2">
               <label htmlFor="">Parking</label>
@@ -263,8 +258,8 @@ export default function PostAd() {
               <input type="checkbox" name="deposit" id="" />
             </span>
             <span className="flex gap-2">
-              <label htmlFor="">Balcony</label>
-              <input type="checkbox" name="balcony" id="" />
+              <label htmlFor="">Premium</label>
+              <input type="checkbox" name="premium" id="" />
             </span>
             <span className="flex gap-2">
               <label htmlFor="">Gated Community</label>
