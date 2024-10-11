@@ -1,9 +1,9 @@
 export async function reverseGeocodeTomTom(lat: number, lng: number) {
-  const apiKey = process.env.NEXT_PUBLIC_TOMTOM_API_KEY;
-  //   const newlat = parseFloat(lat.trim());
-  //   const newlng = parseFloat(lng.trim());
-  const url = `https://api.tomtom.com/search/2/reverseGeocode/${lat},${lng}.json?key=${apiKey}`;
+  const apiKey = process.env.NEXT_PUBLIC_GEOAPIFY_API_KEY;
 
+  console.log(lat, lng);
+
+  const url = `https://api.geoapify.com/v1/geocode/reverse?lat=${lng}&lon=${lat}&apiKey=${apiKey}`;
   const response = await fetch(url);
 
   if (!response.ok) {
@@ -13,11 +13,9 @@ export async function reverseGeocodeTomTom(lat: number, lng: number) {
   }
 
   const data = await response.json();
-
-  // Return relevant location data from the response
-  if (data && data.addresses && data.addresses.length > 0) {
-    const address = data.addresses[0].address;
-    return `${address.streetName}, ${address.countrySubdivision}, ${address.country}`;
+  if (data.features.length) {
+    console.log(data.features[0].properties.formatted);
+    return data.features[0].properties.formatted;
   } else {
     return "Unknown location";
   }

@@ -12,7 +12,8 @@ export default async function Houses() {
   // }
 
   const houses = await getHousesWithTomTomAddresses();
-  console.log(houses);
+  //
+
   if (!houses) {
     return <div>Loading...</div>;
   }
@@ -64,7 +65,7 @@ export default async function Houses() {
                 </p>
                 <p className="flex items-center gap-2">
                   <CiLocationOn />
-                  {house.address}
+                  <span className="text-sm line-clamp-2">{house.address}</span>
                 </p>
               </div>
             </Link>

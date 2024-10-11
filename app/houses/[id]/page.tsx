@@ -2,7 +2,7 @@ import Image from "next/image";
 import React from "react";
 import { createClient } from "@/utils/supabase/server";
 import { generateStaticParams } from "@/utils/generateStatic";
-// import { CiLocationOn } from "react-icons/ci";
+import { CiLocationOn } from "react-icons/ci";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import {
@@ -112,7 +112,9 @@ export default async function House({
             {house.deposit ? <span>Yes</span> : <span>No</span>}
           </p>
           <div className="card-actions justify-between items-center">
-            <p>{/* <CiLocationOn /> {house.location} */}</p>
+            <p>
+              <CiLocationOn /> {house.address}
+            </p>
             <div className="flex gap-5 items-center">
               <Link
                 href={!showContact ? `?showContact=true` : `?showContact=false`}
